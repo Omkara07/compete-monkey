@@ -1,7 +1,7 @@
 import Navbar from "@/components/navigation/navbar";
+import CurrentProfile from "@/lib/current-profile";
 
-export default function Home() {
-
+export default async function Home() {
   return (
     <div className="flex flex-col items-center w-screen h-screen">
       <div className="flex w-full fixed top-0 justify-center z-50">
