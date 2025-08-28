@@ -15,6 +15,7 @@ import axios from "axios"
 import { useEffect, useMemo, useState } from "react"
 import { UploadButton } from "@/lib/uploadthing"
 import { useRouter } from "next/navigation"
+import { AchievementsGrid } from "../achievements-grid"
 
 interface props {
     profile: User
@@ -150,61 +151,7 @@ export function ProfileSection({ profile, updateEndpoint }: props) {
                             <CardDescription>Your accomplishments and milestones</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
-                                    <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mb-3">
-                                        <Trophy className="w-6 h-6 text-primary-foreground" />
-                                    </div>
-                                    <h4 className="font-semibold mb-1">Speed Demon</h4>
-                                    <p className="text-sm text-muted-foreground mb-2">Achieve 90+ WPM in a competition</p>
-                                    <Badge variant="default">Unlocked</Badge>
-                                </div>
-
-                                <div className="p-4 bg-accent/5 rounded-lg border border-accent/20">
-                                    <div className="w-12 h-12 bg-accent rounded-full flex items-center justify-center mb-3">
-                                        <Target className="w-6 h-6 text-accent-foreground" />
-                                    </div>
-                                    <h4 className="font-semibold mb-1">Accuracy Master</h4>
-                                    <p className="text-sm text-muted-foreground mb-2">Maintain 95%+ accuracy for 10 games</p>
-                                    <Badge variant="secondary">Unlocked</Badge>
-                                </div>
-
-                                <div className="p-4 bg-muted/50 rounded-lg border">
-                                    <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mb-3">
-                                        <Clock className="w-6 h-6 text-muted-foreground" />
-                                    </div>
-                                    <h4 className="font-semibold mb-1">Marathon Runner</h4>
-                                    <p className="text-sm text-muted-foreground mb-2">Type for 60 minutes straight</p>
-                                    <Badge variant="outline">Locked</Badge>
-                                </div>
-
-                                <div className="p-4 bg-muted/50 rounded-lg border">
-                                    <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mb-3">
-                                        <Award className="w-6 h-6 text-muted-foreground" />
-                                    </div>
-                                    <h4 className="font-semibold mb-1">Champion</h4>
-                                    <p className="text-sm text-muted-foreground mb-2">Win 50 competitions</p>
-                                    <Badge variant="outline">28/50</Badge>
-                                </div>
-
-                                <div className="p-4 bg-muted/50 rounded-lg border">
-                                    <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mb-3">
-                                        <Shield className="w-6 h-6 text-muted-foreground" />
-                                    </div>
-                                    <h4 className="font-semibold mb-1">Perfectionist</h4>
-                                    <p className="text-sm text-muted-foreground mb-2">Achieve 100% accuracy in a race</p>
-                                    <Badge variant="outline">Locked</Badge>
-                                </div>
-
-                                <div className="p-4 bg-muted/50 rounded-lg border">
-                                    <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mb-3">
-                                        <Bell className="w-6 h-6 text-muted-foreground" />
-                                    </div>
-                                    <h4 className="font-semibold mb-1">Social Butterfly</h4>
-                                    <p className="text-sm text-muted-foreground mb-2">Add 25 friends</p>
-                                    <Badge variant="outline">12/25</Badge>
-                                </div>
-                            </div>
+                            <AchievementsGrid />
                         </CardContent>
                     </Card>
                 </TabsContent>

@@ -21,7 +21,8 @@ model User {
   name     String?
   imageUrl String?
 
-  tests TypingTest[]
+  tests            TypingTest[]
+  userAchievements UserAchievement[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -40,4 +41,32 @@ model TypingTest {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, completedAt])
+}
+
+model Achievement {
+  id          String @id @default(uuid())
+  title       String @unique
+  description String
+  icon        String
+  category    String
+  condition   Json
+
+  createdAt DateTime @default(now())
+
+  userAchievements UserAchievement[]
+
+  @@index([title])
+}
+
+model UserAchievement {
+  id            String   @id @default(uuid())
+  userId        String
+  achievementId String
+  unlockedAt    DateTime @default(now())
+  progress      Json?
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
 }

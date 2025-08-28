@@ -1,3 +1,4 @@
+import { AchievementService } from "@/lib/achievements";
 import CurrentProfile from "@/lib/current-profile";
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
@@ -30,10 +31,19 @@ export async function POST(req: NextRequest) {
             },
         })
 
+        const newAchievements = await AchievementService.checkAchievements(
+            profile.id,
+            typingTest
+        );
+
         return NextResponse.json({
             message: "Test recorded successfully",
             success: true,
-            typingTestId: typingTest.id
+            typingTestId: typingTest.id,
+            newAchievements: newAchievements.map(a => ({
+                title: a.title,
+                description: a.description
+            }))
         });
     }
     catch (error) {
