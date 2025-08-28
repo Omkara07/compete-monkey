@@ -8,6 +8,8 @@ import { BarChart3, Settings, Trophy, LogOut, KeyboardIcon, Gauge, User, UsersIc
 import { User as DB_User } from "@/lib/generated/prisma"
 import { SignOutButton } from "@clerk/nextjs"
 import Link from "next/link"
+import { ToggleTheme } from "../toggle-theme"
+import { useTypingStats } from "@/hooks/useTypingStats"
 
 interface SidebarProps {
     activeSection: string
@@ -43,6 +45,8 @@ export function Sidebar({ activeSection, onSectionChange, profile }: SidebarProp
         },
     ]
 
+    const { stats } = useTypingStats();
+
     return (
         <div className="w-80 bg-sidebar border-r border-sidebar-border flex flex-col h-full">
             {/* Header */}
@@ -63,11 +67,11 @@ export function Sidebar({ activeSection, onSectionChange, profile }: SidebarProp
                 <h3 className="text-xs sm:text-sm font-semibold text-muted-foreground mb-3">QUICK STATS</h3>
                 <div className="grid grid-cols-2 gap-3">
                     <div className="bg-sidebar-accent p-2 sm:p-3 rounded-lg text-center">
-                        <div className="text-xl sm:text-2xl font-bold text-primary filter dark:brightness-125 dark:saturate-200">90</div>
+                        <div className="text-xl sm:text-2xl font-bold text-primary filter dark:brightness-125 dark:saturate-200">{stats?.averageWpm}</div>
                         <div className="text-xs text-muted-foreground">Avg WPM</div>
                     </div>
                     <div className="bg-sidebar-accent p-2 sm:p-3 rounded-lg text-center">
-                        <div className="text-xl sm:text-2xl font-bold text-accent">94%</div>
+                        <div className="text-xl sm:text-2xl font-bold text-accent">{stats?.averageAccuracy}%</div>
                         <div className="text-xs text-muted-foreground">Accuracy</div>
                     </div>
                 </div>
@@ -134,7 +138,7 @@ export function Sidebar({ activeSection, onSectionChange, profile }: SidebarProp
             {/* Footer */}
             < div className="p-3 sm:p-4 border-t border-sidebar-border space-y-3" >
                 {/* User Avatar and Logout */}
-                <div className="flex items-center justify-between" >
+                <div className="flex items-center justify-between gap-2" >
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                         <Avatar className="w-8 h-8 flex-shrink-0">
                             <AvatarImage src={profile.imageUrl || ""} />
@@ -145,13 +149,14 @@ export function Sidebar({ activeSection, onSectionChange, profile }: SidebarProp
                             <p className="text-xs text-muted-foreground">Online</p>
                         </div>
                     </div>
+                    <ToggleTheme />
                     <SignOutButton>
                         <Button
                             variant="ghost"
-                            size="sm"
+                            size="default"
                             className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex-shrink-0"
                         >
-                            <LogOut className="w-4 h-4" />
+                            <LogOut className="w-6 h-6" />
                         </Button>
                     </SignOutButton>
                 </div >

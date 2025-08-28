@@ -15,11 +15,29 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  userId    String   @unique
-  email     String   @unique
-  name      String?
-  imageUrl  String?
+  id       String  @id @default(uuid())
+  userId   String  @unique
+  email    String  @unique
+  name     String?
+  imageUrl String?
+
+  tests TypingTest[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model TypingTest {
+  id          String @id @default(uuid())
+  userId      String
+  wpm         Int
+  accuracy    Float
+  timeLimit   Int
+  passageType String
+
+  completedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, completedAt])
 }

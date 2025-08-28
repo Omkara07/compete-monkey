@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Line, LineChart, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Bar, BarChart, Tooltip } from "recharts"
-import { Trophy, Target, Clock, TrendingUp, Award } from "lucide-react"
+import { Trophy, Target, Clock, TrendingUp, Award, Loader2 } from "lucide-react"
 import { useTheme } from "next-themes"
 
 const wpmData = [
@@ -14,7 +14,13 @@ const wpmData = [
     { date: "Mar", wpm: 78, accuracy: 93 },
     { date: "Apr", wpm: 82, accuracy: 94 },
     { date: "May", wpm: 87, accuracy: 94 },
-    { date: "Jun", wpm: 89, accuracy: 95 }
+    { date: "Jun", wpm: 89, accuracy: 95 },
+    { date: "Jul", wpm: 82, accuracy: 94 },
+    { date: "Aug", wpm: 87, accuracy: 94 },
+    { date: "Sep", wpm: 89, accuracy: 95 },
+    { date: "Oct", wpm: 65, accuracy: 89 },
+    { date: "Nov", wpm: 72, accuracy: 91 },
+    { date: "Dec", wpm: 78, accuracy: 93 },
 ]
 
 const competitionData = [
@@ -35,6 +41,10 @@ const wpmChartConfig = {
         label: "Accuracy(%)",
         color: "hsl(var(--accent))",
     },
+    date: {
+        label: "Date",
+        color: "hsl(var(--muted-foreground))",
+    },
 }
 
 const competitionChartConfig = {
@@ -48,9 +58,34 @@ const competitionChartConfig = {
     },
 }
 
-export function StatsSection() {
+interface Props {
+    chartData: any[]
+    latestTest: {
+        wpm: number
+        accuracy: number
+    } | null,
+    stats: {
+        totalTests: number,
+        averageWpm: number,
+        averageAccuracy: number,
+        bestWpm: number,
+        bestAccuracy: number,
+    } | null,
+    loading: boolean
+}
+
+export function StatsSection({ chartData, stats, latestTest, loading }: Props) {
     const { theme } = useTheme();
     const isDark = theme === "dark";
+    console.log(chartData, stats);
+    if (loading) {
+        return (
+            <div className="flex-1 flex flex-col justify-center items-center h-[70vh]">
+                <Loader2 className="h-7 w-7 text-zinc-500 animate-spin my-4" />
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">Loading...</p>
+            </div>
+        )
+    }
     return (
         <div className="space-y-6">
             {/* Key Metrics */}
@@ -61,10 +96,10 @@ export function StatsSection() {
                         <Target className="h-4 w-4 text-primary" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-primary">89</div>
+                        <div className="text-2xl font-bold text-primary filter dark:brightness-125 dark:saturate-200">{latestTest?.wpm}</div>
                         <p className="text-xs text-muted-foreground">
                             <TrendingUp className="inline w-3 h-3 mr-1" />
-                            +5 from last week
+                            latest test results
                         </p>
                     </CardContent>
                 </Card>
@@ -75,8 +110,8 @@ export function StatsSection() {
                         <Trophy className="h-4 w-4 text-accent" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-accent">94.8%</div>
-                        <p className="text-xs text-muted-foreground">Personal best: 97.2%</p>
+                        <div className="text-2xl font-bold text-accent">{latestTest?.accuracy}%</div>
+                        <p className="text-xs text-muted-foreground">latest test results</p>
                     </CardContent>
                 </Card>
 
@@ -103,9 +138,9 @@ export function StatsSection() {
                     <CardContent className="p-4">
                         <ChartContainer config={wpmChartConfig} className="h-[250px] w-full">
                             <ResponsiveContainer width="100%" height={250}>
-                                <LineChart data={wpmData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                                <LineChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
                                     <CartesianGrid stroke={isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"} />
-                                    <XAxis dataKey="date" fontSize={12} tickMargin={5} stroke="#ffffff" tick={{ fill: "#ffffff" }} />
+                                    <XAxis dataKey="testNumber" fontSize={12} tickMargin={5} stroke="#ffffff" tick={{ fill: "#ffffff" }} />
                                     <YAxis fontSize={12} tickMargin={5} width={40} stroke="#ffffff" tick={{ fill: "#ffffff" }} />
                                     <ChartTooltip content={<ChartTooltipContent />} />
                                     <Line
@@ -160,50 +195,6 @@ export function StatsSection() {
                 </Card>
             </div>
 
-            {/* Recent Achievements */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Recent Achievements</CardTitle>
-                    <CardDescription>Your latest milestones and accomplishments</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-4 p-4 bg-primary/5 rounded-lg border border-primary/20">
-                            <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
-                                <Trophy className="w-6 h-6 text-primary-foreground" />
-                            </div>
-                            <div className="flex-1">
-                                <h4 className="font-semibold">Speed Demon</h4>
-                                <p className="text-sm text-muted-foreground">Achieved 90+ WPM in a competition</p>
-                            </div>
-                            <Badge variant="secondary">New!</Badge>
-                        </div>
-
-                        <div className="flex items-center gap-4 p-4 bg-accent/5 rounded-lg border border-accent/20">
-                            <div className="w-12 h-12 bg-accent rounded-full flex items-center justify-center">
-                                <Target className="w-6 h-6 text-accent-foreground" />
-                            </div>
-                            <div className="flex-1">
-                                <h4 className="font-semibold">Accuracy Master</h4>
-                                <p className="text-sm text-muted-foreground">Maintained 95%+ accuracy for 10 games</p>
-                            </div>
-                            <Badge variant="outline">3 days ago</Badge>
-                        </div>
-
-                        <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
-                            <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
-                                <Clock className="w-6 h-6 text-muted-foreground" />
-                            </div>
-                            <div className="flex-1">
-                                <h4 className="font-semibold">Consistency King</h4>
-                                <p className="text-sm text-muted-foreground">Played for 7 consecutive days</p>
-                            </div>
-                            <Badge variant="outline">1 week ago</Badge>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
             {/* Skill Progress */}
             <Card>
                 <CardHeader>
@@ -215,33 +206,17 @@ export function StatsSection() {
                         <div>
                             <div className="flex justify-between text-sm mb-2">
                                 <span>Speed (WPM)</span>
-                                <span>89/100</span>
+                                <span>{stats?.averageWpm}/{(stats?.averageWpm || 0) < 100 ? 100 : 200}</span>
                             </div>
-                            <Progress value={89} className="h-2" />
+                            <Progress value={stats?.averageWpm} className="h-2" />
                         </div>
 
                         <div>
                             <div className="flex justify-between text-sm mb-2">
                                 <span>Accuracy</span>
-                                <span>95/100</span>
+                                <span>{stats?.averageAccuracy}/100</span>
                             </div>
-                            <Progress value={95} className="h-2" />
-                        </div>
-
-                        <div>
-                            <div className="flex justify-between text-sm mb-2">
-                                <span>Consistency</span>
-                                <span>78/100</span>
-                            </div>
-                            <Progress value={78} className="h-2" />
-                        </div>
-
-                        <div>
-                            <div className="flex justify-between text-sm mb-2">
-                                <span>Endurance</span>
-                                <span>82/100</span>
-                            </div>
-                            <Progress value={82} className="h-2" />
+                            <Progress value={stats?.averageAccuracy} className="h-2" />
                         </div>
                     </div>
                 </CardContent>

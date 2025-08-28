@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Clock, RotateCcw, Home, Trophy, Target, Zap } from "lucide-react"
+import { Clock, RotateCcw, Home, Trophy, Target, Zap, KeyboardIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
+import axios from "axios"
 
 const textPassages = [
     "The quick brown fox jumps over the lazy dog. This pangram contains every letter of the alphabet at least once. It has been used for decades to test typewriters and keyboards. The sentence is memorable and flows naturally when typed.",
@@ -182,7 +183,7 @@ export function TypingTest() {
         })
     }
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (gameState !== "typing") return
 
         const value = e.target.value
@@ -197,6 +198,7 @@ export function TypingTest() {
         if (value.length >= currentPassage.length) {
             clearAllTimers()
             setGameState("finished")
+            await saveTestResult(newStats)
         }
     }
 
@@ -227,6 +229,33 @@ export function TypingTest() {
         })
     }
 
+    const saveTestResult = async (finalStats: TypingStats) => {
+        try {
+            const res = await axios.post("/api/typing-test", {
+                wpm: finalStats.wpm,
+                accuracy: finalStats.accuracy,
+                timeLimit,
+                passageType,
+            })
+            if (!res.data?.success) {
+                console.log("error");
+            }
+
+            console.log(res.data.testId);
+        }
+        catch (error) {
+            console.log("Error saving test result:", error);
+        }
+    }
+
+    const finishTest = async () => {
+        clearAllTimers()
+        setGameState("finished")
+
+        // Save results to database
+        await saveTestResult(stats)
+    }
+
     // Cleanup on unmount
     useEffect(() => {
         return () => {
@@ -238,6 +267,9 @@ export function TypingTest() {
     useEffect(() => {
         if (gameState === "setup") {
             setTimeLeft(timeLimit)
+        }
+        if (gameState === "finished") {
+            finishTest()
         }
     }, [timeLimit, gameState])
 
@@ -253,7 +285,7 @@ export function TypingTest() {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                                <Zap className="w-5 h-5 text-primary-foreground" />
+                                <KeyboardIcon className="w-5 h-5 text-primary-foreground" />
                             </div>
                             <h1 className="text-xl font-bold">Compete-Monkey</h1>
                         </div>

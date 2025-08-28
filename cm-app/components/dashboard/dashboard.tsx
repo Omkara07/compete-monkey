@@ -3,13 +3,12 @@
 import { useState } from "react"
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { StatsSection } from "@/components/dashboard/stats-section"
-import { TestSection } from "@/components/dashboard/test-section"
 import { FriendsSection } from "@/components/dashboard/friend-section"
 import { ProfileSection } from "@/components/dashboard/profile-section"
-import { ToggleTheme } from "@/components/toggle-theme"
 import { Button } from "@/components/ui/button"
 import { Menu } from "lucide-react"
 import type { User } from "@/lib/generated/prisma"
+import { useTypingStats } from "@/hooks/useTypingStats"
 
 interface Props {
     profile: User
@@ -17,19 +16,18 @@ interface Props {
 export function Dashboard({ profile }: Props) {
     const [activeSection, setActiveSection] = useState("stats")
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+    const { chartData, stats, loading, latestTest } = useTypingStats();
 
     const renderActiveSection = () => {
         switch (activeSection) {
             case "stats":
-                return <StatsSection />
-            case "speedTest":
-                return <TestSection />
+                return <StatsSection chartData={chartData} latestTest={latestTest} stats={stats} loading={loading} />
             case "testWithFriends":
                 return <FriendsSection />
             case "profile":
                 return <ProfileSection profile={profile} updateEndpoint={"/api/profile"} />
             default:
-                return <StatsSection />
+                return <StatsSection chartData={chartData} latestTest={latestTest} stats={stats} loading={loading} />
         }
     }
 
@@ -67,7 +65,6 @@ export function Dashboard({ profile }: Props) {
                                 {activeSection === "profile" && "Profile Settings"}
                             </h1>
                         </div>
-                        <ToggleTheme />
                     </div>
                     {renderActiveSection()}
                 </div>
