@@ -76,7 +76,7 @@ export function TestSection() {
             <Card>
                 <CardHeader>
                     <CardTitle>My Rooms</CardTitle>
-                    <CardDescription>Rooms you've created or are hosting</CardDescription>
+                    <CardDescription>Rooms you&apos;ve created or are hosting</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">

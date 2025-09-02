@@ -11,7 +11,7 @@ export default function RoomNotFound() {
                 <AlertCircle className="w-16 h-16 text-destructive mx-auto mb-4" />
                 <h1 className="text-2xl font-bold mb-2">Room Not Found</h1>
                 <p className="text-muted-foreground mb-6">
-                    The room you're looking for doesn't exist or may have expired.
+                    The room you&apos;re looking for doesn&apos;t exist or may have expired.
                 </p>
                 <div className="space-y-2">
                     <Button asChild className="w-full">
