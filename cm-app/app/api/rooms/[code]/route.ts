@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { code: string } }
+    { params }: { params: Promise<{ code: string }> }
 ) {
     try {
         const profile = await CurrentProfile();
@@ -12,8 +12,9 @@ export async function GET(
             return new Response("Unauthorized", { status: 401 });
         }
 
+        const { code } = await params;
         const room = await db.room.findUnique({
-            where: { code: params.code },
+            where: { code: code },
             include: {
                 host: true,
                 participants: {
@@ -35,7 +36,7 @@ export async function GET(
 
 export async function POST(
     req: NextRequest,
-    { params }: { params: { code: string } }
+    { params }: { params: Promise<{ code: string }> }
 ) {
     try {
         const profile = await CurrentProfile();
@@ -43,8 +44,9 @@ export async function POST(
             return new Response("Unauthorized", { status: 401 });
         }
 
+        const { code } = await params;
         const room = await db.room.findUnique({
-            where: { code: params.code },
+            where: { code: code },
             include: { participants: true }
         });
 
