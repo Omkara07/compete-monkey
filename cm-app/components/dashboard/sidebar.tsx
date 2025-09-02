@@ -33,7 +33,7 @@ export function Sidebar({ activeSection, onSectionChange, profile }: SidebarProp
         },
         {
             id: "testWithFriends",
-            label: "Test With Friends",
+            label: "Rooms and Competitions",
             icon: UsersIcon,
             description: "Compete with Friends in Rooms",
         },
@@ -108,27 +108,50 @@ export function Sidebar({ activeSection, onSectionChange, profile }: SidebarProp
                                     </Button>
                                 </Link>
                                 :
-                                <Button
-                                    key={item.id}
-                                    variant={isActive ? "default" : "ghost"}
-                                    className={cn(
-                                        "w-full justify-start h-auto p-3 sm:p-4 text-left",
-                                        isActive
-                                            ? "bg-primary text-primary-foreground shadow-sm"
-                                            : "",
-                                    )}
-                                    onClick={() => onSectionChange(item.id)}
-                                >
-                                    <div className="flex items-center gap-3 w-full min-w-0">
-                                        <Icon className="w-5 h-5 flex-shrink-0" />
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center justify-between">
-                                                <span className="font-medium truncate">{item.label}</span>
+                                item.id === "testWithFriends" ?
+                                    <Link href="/room" key={item.id} className="w-full">
+                                        <Button
+                                            variant={isActive ? "default" : "ghost"}
+                                            className={cn(
+                                                "w-full justify-start h-auto p-3 sm:p-4 text-left",
+                                                isActive
+                                                    ? "bg-primary text-primary-foreground shadow-sm"
+                                                    : "",
+                                            )}
+                                        >
+                                            <div className="flex items-center gap-3 w-full min-w-0">
+                                                <Icon className="w-5 h-5 flex-shrink-0" />
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="font-medium truncate">{item.label}</span>
+                                                    </div>
+                                                    <p className="text-xs opacity-70 mt-1 truncate">{item.description}</p>
+                                                </div>
                                             </div>
-                                            <p className="text-xs opacity-70 mt-1 truncate">{item.description}</p>
+                                        </Button>
+                                    </Link>
+                                    :
+                                    <Button
+                                        key={item.id}
+                                        variant={isActive ? "default" : "ghost"}
+                                        className={cn(
+                                            "w-full justify-start h-auto p-3 sm:p-4 text-left",
+                                            isActive
+                                                ? "bg-primary text-primary-foreground shadow-sm"
+                                                : "",
+                                        )}
+                                        onClick={() => onSectionChange(item.id)}
+                                    >
+                                        <div className="flex items-center gap-3 w-full min-w-0">
+                                            <Icon className="w-5 h-5 flex-shrink-0" />
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="font-medium truncate">{item.label}</span>
+                                                </div>
+                                                <p className="text-xs opacity-70 mt-1 truncate">{item.description}</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                </Button>
+                                    </Button>
 
                         )
                     })}

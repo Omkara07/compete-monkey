@@ -6,7 +6,7 @@ export function AchievementsGrid() {
     const { achievements, stats, loading } = useAchievements();
 
     if (loading) {
-        return <div className="flex-1 flex flex-col justify-center items-center h-[40vh]">
+        return <div className="flex-1 flex flex-col justify-center items-center h-[60vh]">
             <Loader2 className="h-7 w-7 text-zinc-500 animate-spin my-4" />
             <p className="text-xs text-zinc-500 dark:text-zinc-400">Loading...</p>
         </div>
@@ -46,7 +46,7 @@ export function AchievementsGrid() {
                         <div
                             key={achievement.id}
                             className={`p-4 rounded-lg border ${isUnlocked
-                                ? 'bg-primary/5 border-primary/20'
+                                ? 'bg-primary/5 border-secondary/20'
                                 : 'bg-muted/50 border-muted'
                                 }`}
                         >

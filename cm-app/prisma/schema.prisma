@@ -26,6 +26,11 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  hostedRoom        Room[]              @relation("RoomHost")
+  roomParticipant   RoomParticipant[]
+  competitionWins   Competition[]       @relation("CompetitionWinner")
+  CompetitionResult CompetitionResult[]
 }
 
 model TypingTest {
@@ -69,4 +74,80 @@ model UserAchievement {
   achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
 
   @@unique([userId, achievementId])
+}
+
+model Room {
+  id          String     @id @default(cuid())
+  code        String     @unique
+  hostId      String
+  timeLimit   Int
+  passageType String
+  passage     String     @db.Text
+  status      RoomStatus @default(WAITING)
+  maxPlayers  Int        @default(4)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  host         User              @relation("RoomHost", fields: [hostId], references: [id], onDelete: Cascade)
+  participants RoomParticipant[]
+  competiions  Competition[]
+
+  @@index([code])
+  @@index([hostId])
+}
+
+model RoomParticipant {
+  id       String   @id @default(cuid())
+  roomId   String
+  userId   String
+  joinedAt DateTime @default(now())
+  isReady  Boolean  @default(false)
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId])
+}
+
+model Competition {
+  id          String    @id @default(cuid())
+  roomId      String
+  winnerId    String?
+  startedAt   DateTime
+  completedAt DateTime?
+  passage     String    @db.Text
+  timeLimit   Int
+  passageType String
+
+  room    Room                @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  winner  User?               @relation("CompetitionWinner", fields: [winnerId], references: [id])
+  results CompetitionResult[]
+
+  @@index([roomId])
+  @@index([startedAt])
+}
+
+model CompetitionResult {
+  id             String    @id @default(cuid())
+  competitionId  String
+  userId         String
+  wpm            Int
+  accuracy       Float
+  correctChars   Int
+  incorrectChars Int
+  totalChars     Int
+  completedAt    DateTime?
+  position       Int?
+
+  competition Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([competitionId, userId])
+}
+
+enum RoomStatus {
+  WAITING
+  COUNTDOWN
+  ACTIVE
+  FINISHED
 }
