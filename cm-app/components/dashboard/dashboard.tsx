@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Menu } from "lucide-react"
 import type { User } from "@/lib/generated/prisma"
 import { useTypingStats } from "@/hooks/useTypingStats"
+import { useCompetitionStats } from "@/hooks/useCompetitionStats"
 
 interface Props {
     profile: User
@@ -17,17 +18,18 @@ export function Dashboard({ profile }: Props) {
     const [activeSection, setActiveSection] = useState("stats")
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
     const { chartData, stats, loading, latestTest } = useTypingStats();
+    const { competitionData, stats: competitionStats, loading: competitionLoading, refetch: refetchCompetitionStats } = useCompetitionStats();
 
     const renderActiveSection = () => {
         switch (activeSection) {
             case "stats":
-                return <StatsSection chartData={chartData} latestTest={latestTest} stats={stats} loading={loading} />
+                return <StatsSection chartData={chartData} latestTest={latestTest} stats={stats} loading={loading} competitionData={competitionData} competitionStats={competitionStats || []} competitionLoading={competitionLoading} />
             case "testWithFriends":
                 return <FriendsSection />
             case "profile":
                 return <ProfileSection profile={profile} updateEndpoint={"/api/profile"} />
             default:
-                return <StatsSection chartData={chartData} latestTest={latestTest} stats={stats} loading={loading} />
+                return <StatsSection chartData={chartData} latestTest={latestTest} stats={stats} loading={loading} competitionData={competitionData} competitionStats={competitionStats || []} competitionLoading={competitionLoading} />
         }
     }
 

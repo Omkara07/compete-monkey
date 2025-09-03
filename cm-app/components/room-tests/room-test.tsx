@@ -123,6 +123,7 @@ export default function Counter() {
         };
     }, []);
 
+    //socket io connections and events
     useEffect(() => {
         if (!user) {
             setError('Please log in to join the room');
@@ -141,10 +142,22 @@ export default function Counter() {
             newSocket.emit('join-room', { roomCode, user });
         });
 
-        newSocket.on('joined-room', ({ room }) => {
+        newSocket.on('joined-room', async ({ room }) => {
             console.log('Received joined-room:', room);
             setRoom(room);
             setIsHost(room?.host?.id && user?.id ? room.host.id === user.id : false);
+
+            // Join user in database after successful socket room join
+            try {
+                const response = await axios.post(`/api/rooms/${roomCode}`, {
+                    userId: user?.id,
+                    userName: user?.name
+                });
+                console.log('User joined room in database:', response.data);
+            } catch (error) {
+                console.error('Error joining room in database:', error);
+                setError('Failed to join room in database. Please try again.');
+            }
         });
 
         newSocket.on('room-updated', ({ participants, settings, gameState }) => {
@@ -217,14 +230,13 @@ export default function Counter() {
         });
 
         newSocket.on('game-finished', ({ results, winner }) => {
-            console.log('Received game-finished:', { results, winner });
+            console.log('Received game-finished with results:', results);
             setGameState('finished');
             setFinalResults(results || []);
             if (timerRef.current) {
                 clearInterval(timerRef.current);
                 timerRef.current = null;
             }
-            saveCompetitionResult();
         });
 
         newSocket.on('room-reset', ({ participants, settings, gameState }) => {
@@ -258,6 +270,12 @@ export default function Counter() {
             newSocket.disconnect();
         };
     }, [roomCode, user]);
+
+    useEffect(() => {
+        if (gameState === "finished" && finalResults.length > 0) {
+            saveCompetitionResult();
+        }
+    }, [gameState, finalResults]);
 
     const copyInviteLink = () => {
         navigator.clipboard.writeText(roomUrl);
@@ -294,7 +312,7 @@ export default function Counter() {
             accuracy: newStats.accuracy
         });
 
-        if (value.length >= currentPassage.length) {
+        if (value.length >= currentPassage.length || timeLeft <= 0) {
             submitResult();
         }
     };
@@ -318,13 +336,28 @@ export default function Counter() {
 
     const saveCompetitionResult = async () => {
         try {
-            await axios.post('/api/competitions', {
+            // Only host should save competition results
+            if (!isHost) {
+                console.log('Not host, skipping competition save');
+                return;
+            }
+
+            if (finalResults.length === 0) {
+                console.warn('No results to save');
+                return;
+            }
+
+            console.log('Host saving competition results...');
+
+            const response = await axios.post('/api/competitions', {
                 roomCode,
                 results: finalResults,
                 passage: currentPassage,
                 timeLimit: room?.settings?.timeLimit,
                 passageType: room?.settings?.passageType
             });
+
+            console.log('Competition saved successfully:', response.data);
         } catch (error) {
             console.error('Error saving competition result:', error);
         }
@@ -344,7 +377,7 @@ export default function Counter() {
                     className += " text-destructive font-medium dark:text-destructive dark:bg-destructive/20 bg-destructive/20 rounded-sm";
                 }
             } else if (index === currentCharIndex) {
-                className += " bg-primary text-primary-foreground animate-pulse rounded-sm";
+                className += " text-muted-foreground/40 animate-pulse rounded-sm bg-muted-foreground/10";
             } else {
                 className += " text-muted-foreground/40";
             }

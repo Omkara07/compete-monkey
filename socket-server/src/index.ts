@@ -88,35 +88,48 @@ io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
 
     // Join room
-    socket.on('join-room', ({ roomCode, user }: { roomCode: string; user: User }) => {
-        socket.join(roomCode);
+    socket.on('join-room', async ({ roomCode, user }: { roomCode: string; user: User }) => {
+        try {
+            socket.join(roomCode);
 
-        if (!rooms.has(roomCode)) {
-            rooms.set(roomCode, createRoom(roomCode, user));
-        }
-
-        const room = rooms.get(roomCode)!;
-        room.participants.set(socket.id, {
-            ...user,
-            socketId: socket.id,
-            isReady: false,
-            progress: 0
-        });
-
-        // Notify all participants
-        io.to(roomCode).emit('room-updated', {
-            participants: Array.from(room.participants.values()),
-            settings: room.settings,
-            gameState: room.gameState
-        });
-
-        socket.emit('joined-room', {
-            roomCode,
-            room: {
-                ...room,
-                participants: Array.from(room.participants.values())
+            if (!rooms.has(roomCode)) {
+                rooms.set(roomCode, createRoom(roomCode, user));
             }
-        });
+
+            const room = rooms.get(roomCode)!;
+
+            room.participants.set(socket.id, {
+                ...user,
+                socketId: socket.id,
+                isReady: false,
+                progress: 0
+            });
+
+            // Emitting event to frontend to handle database operation
+            socket.emit('join-user-in-db', {
+                roomCode,
+                user
+            });
+
+            // Notify all participants
+            io.to(roomCode).emit('room-updated', {
+                participants: Array.from(room.participants.values()),
+                settings: room.settings,
+                gameState: room.gameState
+            });
+
+            socket.emit('joined-room', {
+                roomCode,
+                room: {
+                    ...room,
+                    participants: Array.from(room.participants.values())
+                }
+            });
+
+        } catch (error) {
+            console.error('Error joining room:', error);
+            socket.emit('error', { message: 'Failed to join room' });
+        }
     });
 
     // Update room settings (host only)
@@ -198,16 +211,16 @@ io.on('connection', (socket) => {
                             });
 
                             // Automatically reset room after 5 seconds
-                            setTimeout(() => {
-                                if (rooms.has(roomCode)) {
-                                    resetRoom(room);
-                                    io.to(roomCode).emit('room-reset', {
-                                        participants: Array.from(room.participants.values()),
-                                        settings: room.settings,
-                                        gameState: room.gameState
-                                    });
-                                }
-                            }, 5000); // 5-second delay to show results
+                            // setTimeout(() => {
+                            //     if (rooms.has(roomCode)) {
+                            //         resetRoom(room);
+                            //         io.to(roomCode).emit('room-reset', {
+                            //             participants: Array.from(room.participants.values()),
+                            //             settings: room.settings,
+                            //             gameState: room.gameState
+                            //         });
+                            //     }
+                            // }, 5000); // 5-second delay to show results
                         }
                     }, (room.settings.timeLimit + 2) * 1000);
                 }
@@ -258,7 +271,20 @@ io.on('connection', (socket) => {
             const completedResults = room.results.size;
 
             if (completedResults === totalParticipants) {
-                const sortedResults = Array.from(room.results.values())
+                const finalResults = Array.from(room.participants.values()).map(participant => {
+                    const existingResult = room.results.get(participant.socketId);
+                    return {
+                        userId: participant.id,
+                        wpm: existingResult?.wpm || participant.currentWpm || 0,
+                        accuracy: existingResult?.accuracy || participant.currentAccuracy || 0,
+                        correctChars: existingResult?.correctChars || 0,
+                        incorrectChars: existingResult?.incorrectChars || 0,
+                        totalChars: existingResult?.totalChars || 0,
+                        completedAt: existingResult?.completedAt || Date.now()
+                    };
+                });
+
+                const sortedResults = finalResults
                     .sort((a, b) => {
                         if (a.wpm !== b.wpm) return b.wpm - a.wpm;
                         return b.accuracy - a.accuracy;
@@ -270,18 +296,17 @@ io.on('connection', (socket) => {
                     results: sortedResults,
                     winner: sortedResults[0]
                 });
-
                 // Automatically reset room after 5 seconds
-                setTimeout(() => {
-                    if (rooms.has(roomCode)) {
-                        resetRoom(room);
-                        io.to(roomCode).emit('room-reset', {
-                            participants: Array.from(room.participants.values()),
-                            settings: room.settings,
-                            gameState: room.gameState
-                        });
-                    }
-                }, 5000);
+                // setTimeout(() => {
+                //     if (rooms.has(roomCode)) {
+                //         resetRoom(room);
+                //         io.to(roomCode).emit('room-reset', {
+                //             participants: Array.from(room.participants.values()),
+                //             settings: room.settings,
+                //             gameState: room.gameState
+                //         });
+                //     }
+                // }, 5000);
             }
         }
     });
@@ -305,19 +330,23 @@ io.on('connection', (socket) => {
 
         for (const [roomCode, room] of rooms.entries()) {
             if (room.participants.has(socket.id)) {
+                const wasHost = room.host.id === socket.id;
                 room.participants.delete(socket.id);
 
                 if (room.participants.size === 0) {
                     rooms.delete(roomCode);
                 } else {
-                    if (room.host.id === socket.id && room.participants.size > 0) {
+                    if (wasHost && room.participants.size > 0) {
+                        // Only change host if the disconnected user was the host
                         const newHost = Array.from(room.participants.values())[0];
                         room.host = { id: newHost?.id || "", name: newHost?.name || "" };
+                        console.log(`New host set: ${newHost?.name || ""}`);
                     }
                     io.to(roomCode).emit('room-updated', {
                         participants: Array.from(room.participants.values()),
                         settings: room.settings,
-                        gameState: room.gameState
+                        gameState: room.gameState,
+                        host: room.host // Send updated host info
                     });
                 }
                 break;

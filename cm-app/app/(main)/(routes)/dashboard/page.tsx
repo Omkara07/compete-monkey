@@ -9,5 +9,7 @@ export default async function Home() {
         redirect("/sign-in")
     }
 
-    return <Dashboard profile={profile} />
+    return <div className="max-md:pt-3">
+        <Dashboard profile={profile} />
+    </div>
 }

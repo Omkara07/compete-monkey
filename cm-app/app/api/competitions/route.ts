@@ -11,6 +11,21 @@ export async function POST(req: NextRequest) {
 
         const { roomCode, results, passage, timeLimit, passageType } = await req.json();
 
+        console.log('Received competition data:', {
+            roomCode,
+            resultsCount: results?.length,
+            passageLength: passage?.length,
+            timeLimit,
+            passageType
+        });
+
+        if (!roomCode || !results || !Array.isArray(results)) {
+            return NextResponse.json(
+                { error: "Invalid request data" },
+                { status: 400 }
+            );
+        }
+
         const room = await db.room.findUnique({
             where: { code: roomCode }
         });
@@ -23,12 +38,12 @@ export async function POST(req: NextRequest) {
         const competition = await db.competition.create({
             data: {
                 roomId: room.id,
-                passage,
-                timeLimit,
-                passageType,
-                startedAt: new Date(Date.now() - timeLimit * 1000),
+                passage: passage || "",
+                timeLimit: timeLimit || 30,
+                passageType: passageType || "text",
+                startedAt: new Date(Date.now() - (timeLimit || 30) * 1000),
                 completedAt: new Date(),
-                winnerId: results[0].userId
+                winnerId: results[0]?.userId
             }
         });
 
@@ -39,17 +54,20 @@ export async function POST(req: NextRequest) {
                     data: {
                         competitionId: competition.id,
                         userId: result.userId,
-                        wpm: result.wpm,
-                        accuracy: result.accuracy,
-                        correctChars: result.correctChars,
-                        incorrectChars: result.incorrectChars,
-                        totalChars: result.totalChars,
+                        wpm: result.wpm || 0,
+                        accuracy: result.accuracy || 0,
+                        correctChars: result.correctChars || 0,
+                        incorrectChars: result.incorrectChars || 0,
+                        totalChars: result.totalChars || 0,
                         position: index + 1,
-                        completedAt: result.completedAt ? new Date(result.completedAt) : new Date()
+                        completedAt: result.completedAt ?
+                            new Date(result.completedAt) : new Date()
                     }
                 })
             )
         );
+
+        console.log(`Competition ${competition.id} saved with ${competitionResults.length} results`);
 
         return NextResponse.json({
             competitionId: competition.id,
@@ -57,8 +75,11 @@ export async function POST(req: NextRequest) {
         });
 
     } catch (error) {
-        console.log("[COMPETITION_POST]", error);
-        return new Response("Internal Server Error", { status: 500 });
+        console.error("[COMPETITION_POST]", error);
+        return NextResponse.json(
+            { error: "Internal Server Error" },
+            { status: 500 }
+        );
     }
 }
 

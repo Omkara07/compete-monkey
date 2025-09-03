@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { BarChart3, Settings, Trophy, LogOut, KeyboardIcon, Gauge, User, UsersIcon } from "lucide-react"
+import { BarChart3, Settings, Trophy, LogOut, KeyboardIcon, Gauge, User, UsersIcon, Loader2, AlertCircle, Target, TrendingUp } from "lucide-react"
 import { User as DB_User } from "@/lib/generated/prisma"
 import { SignOutButton } from "@clerk/nextjs"
 import Link from "next/link"
@@ -45,7 +45,7 @@ export function Sidebar({ activeSection, onSectionChange, profile }: SidebarProp
         },
     ]
 
-    const { stats } = useTypingStats();
+    const { stats, loading, refetch } = useTypingStats();
 
     return (
         <div className="w-80 bg-sidebar border-r border-sidebar-border flex flex-col h-full">
@@ -65,16 +65,60 @@ export function Sidebar({ activeSection, onSectionChange, profile }: SidebarProp
             {/* Quick Stats */}
             <div className="p-4 sm:p-6 border-b border-sidebar-border">
                 <h3 className="text-xs sm:text-sm font-semibold text-muted-foreground mb-3">QUICK STATS</h3>
-                <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-sidebar-accent p-2 sm:p-3 rounded-lg text-center">
-                        <div className="text-xl sm:text-2xl font-bold text-primary filter dark:brightness-125 dark:saturate-200">{stats?.averageWpm}</div>
-                        <div className="text-xs text-muted-foreground">Avg WPM</div>
+
+                {loading ? (
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-sidebar-accent p-2 sm:p-3 rounded-lg text-center">
+                            <div className="flex items-center justify-center h-8 mb-1">
+                                <Loader2 className="h-4 w-4 text-primary animate-spin" />
+                            </div>
+                            <div className="text-xs text-muted-foreground">Loading...</div>
+                        </div>
+                        <div className="bg-sidebar-accent p-2 sm:p-3 rounded-lg text-center">
+                            <div className="flex items-center justify-center h-8 mb-1">
+                                <Loader2 className="h-4 w-4 text-accent animate-spin" />
+                            </div>
+                            <div className="text-xs text-muted-foreground">Loading...</div>
+                        </div>
                     </div>
-                    <div className="bg-sidebar-accent p-2 sm:p-3 rounded-lg text-center">
-                        <div className="text-xl sm:text-2xl font-bold text-accent">{stats?.averageAccuracy}%</div>
-                        <div className="text-xs text-muted-foreground">Accuracy</div>
+                ) : stats && (stats.averageWpm > 0 || stats.averageAccuracy > 0) ? (
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-sidebar-accent p-2 sm:p-3 rounded-lg text-center">
+                            <div className="text-xl sm:text-2xl font-bold text-primary filter dark:brightness-125 dark:saturate-200">
+                                {stats.averageWpm || 0}
+                            </div>
+                            <div className="text-xs text-muted-foreground">Avg WPM</div>
+                        </div>
+                        <div className="bg-sidebar-accent p-2 sm:p-3 rounded-lg text-center">
+                            <div className="text-xl sm:text-2xl font-bold text-accent">
+                                {stats.averageAccuracy || 0}%
+                            </div>
+                            <div className="text-xs text-muted-foreground">Accuracy</div>
+                        </div>
                     </div>
-                </div>
+                ) : (
+                    <div className="space-y-3">
+                        <div className="bg-sidebar-accent p-3 rounded-lg text-center">
+                            <div className="flex flex-col items-center space-y-2">
+                                <Target className="h-6 w-6 text-muted-foreground/50" />
+                                <div className="text-sm font-medium text-muted-foreground">No Stats Yet</div>
+                                <div className="text-xs text-muted-foreground/70">
+                                    Take your first typing test to see stats here
+                                </div>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="bg-sidebar-accent p-2 sm:p-3 rounded-lg text-center">
+                                <div className="text-xl sm:text-2xl font-bold text-muted-foreground/50">--</div>
+                                <div className="text-xs text-muted-foreground">Avg WPM</div>
+                            </div>
+                            <div className="bg-sidebar-accent p-2 sm:p-3 rounded-lg text-center">
+                                <div className="text-xl sm:text-2xl font-bold text-muted-foreground/50">--%</div>
+                                <div className="text-xs text-muted-foreground">Accuracy</div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Navigation */}

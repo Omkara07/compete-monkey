@@ -41,7 +41,7 @@ export default function CreateRoomPage() {
                 <Card className="p-8">
                     <div className="space-y-8">
                         {/* Time Selection */}
-                        <div>
+                        {/* <div>
                             <label className="block text-sm font-medium mb-4 flex items-center gap-2">
                                 <Clock size={16} />
                                 Time Limit
@@ -64,10 +64,10 @@ export default function CreateRoomPage() {
                                     <div className="text-sm text-muted-foreground">Standard Race</div>
                                 </Button>
                             </div>
-                        </div>
+                        </div> */}
 
                         {/* Passage Type Selection */}
-                        <div>
+                        {/* <div>
                             <label className="block text-sm font-medium mb-4 flex items-center gap-2">
                                 <Target size={16} />
                                 Content Type
@@ -92,7 +92,7 @@ export default function CreateRoomPage() {
                                     <div className="text-sm text-muted-foreground">Programming snippets</div>
                                 </Button>
                             </div>
-                        </div>
+                        </div> */}
 
                         <Button
                             onClick={createRoom}

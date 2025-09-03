@@ -73,7 +73,7 @@ export function ProfileSection({ profile, updateEndpoint }: props) {
                         </CardHeader>
                         <CardContent className="space-y-6">
                             {/* Avatar Section */}
-                            <div className="flex items-center gap-6 ">
+                            <div className=" flex flex-col md:flex-row max-md:items-start items-center gap-6 ">
                                 <div className="relative flex flex-col gap-y-2 justify-center items-center">
                                     <a href={imageUrl || ""} target="_blank" rel="noopener noreferrer">
                                         <Avatar className="w-24 h-24">

@@ -54,7 +54,7 @@ export default async function RoomPage() {
     const { myRooms, joinedRooms } = await fetchRooms(profile?.id || null)
 
     return (
-        <main className="mx-auto w-full max-w-5xl p-4 md:p-6 lg:p-8">
+        <main className="w-full max-w-5xlflex flex-col gap-4 justify-center items-center p-4 md:p-6 lg:p-8">
             {/* Actions */}
             <section className="mb-6 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-start">
                 <Link href="/room/create" className="w-full sm:w-auto">

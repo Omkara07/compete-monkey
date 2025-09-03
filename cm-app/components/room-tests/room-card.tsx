@@ -30,14 +30,14 @@ export function RoomCard({ room, href, className }: { room: Room; href: string; 
                     </div>
                 </CardHeader>
                 <CardContent className="grid gap-2">
-                    <div className="flex items-center gap-2 text-muted-foreground">
+                    {/* <div className="flex items-center gap-2 text-muted-foreground">
                         <Timer className="h-4 w-4" />
                         <span>{room.timeLimit}s</span>
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
                         {isCode ? <CodeXml className="h-4 w-4" /> : <Users className="h-4 w-4" />}
                         <span className="capitalize">{isCode ? "code snippet" : "text"}</span>
-                    </div>
+                    </div> */}
                     <div className="flex items-center gap-2 text-muted-foreground">
                         <Users className="h-4 w-4" />
                         <span>Max {room.maxPlayers} players</span>

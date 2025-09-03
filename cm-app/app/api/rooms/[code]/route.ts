@@ -41,13 +41,18 @@ export async function POST(
     try {
         const profile = await CurrentProfile();
         if (!profile) {
-            return new Response("Unauthorized", { status: 401 });
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         const { code } = await params;
+
+        // Get the room with current participants
         const room = await db.room.findUnique({
             where: { code: code },
-            include: { participants: true }
+            include: {
+                participants: true,
+                host: true
+            }
         });
 
         if (!room) {
@@ -61,19 +66,31 @@ export async function POST(
         // Check if already in room
         const existingParticipant = room.participants.find(p => p.userId === profile.id);
         if (existingParticipant) {
-            return NextResponse.json({ message: "Already in room" });
+            return NextResponse.json({
+                message: "Already in room",
+                participant: existingParticipant
+            });
         }
 
-        await db.roomParticipant.create({
+        // Create new participant
+        const participant = await db.roomParticipant.create({
             data: {
                 roomId: room.id,
-                userId: profile.id
-            }
+                userId: profile.id,
+                isReady: false
+            },
+            include: { user: true }
         });
 
-        return NextResponse.json({ success: true });
+        return NextResponse.json({
+            success: true,
+            participant
+        });
     } catch (error) {
-        console.log("[ROOM_JOIN]", error);
-        return new Response("Internal Server Error", { status: 500 });
+        console.error("[ROOM_JOIN]", error);
+        return NextResponse.json(
+            { error: "Internal Server Error" },
+            { status: 500 }
+        );
     }
 }
