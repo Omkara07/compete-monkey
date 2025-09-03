@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import io, { Socket } from 'socket.io-client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -367,27 +367,46 @@ export default function Counter() {
         socket?.emit('reset-room', { roomCode });
     };
 
-    const renderPassageText = () => {
+    const renderPassageText = useMemo(() => {
         return currentPassage.split("").map((char, index) => {
-            let className = "transition-all duration-150 ease-out";
-            if (index < userInput.length) {
+            const isTyped = index < userInput.length
+            const isCurrent = index === currentCharIndex
+
+            let className = "transition-all duration-150 ease-out"
+
+            if (isTyped) {
                 if (userInput[index] === char) {
-                    className += " dark:text-primary-foreground text-black font-medium bg-primary/10 rounded-sm";
+                    className += " dark:text-primary-foreground text-black font-medium bg-primary/10 rounded-sm"
                 } else {
-                    className += " text-destructive font-medium dark:text-destructive dark:bg-destructive/20 bg-destructive/20 rounded-sm";
+                    className +=
+                        " text-destructive font-medium dark:text-destructive dark:bg-destructive/20 bg-destructive/20 rounded-sm"
                 }
-            } else if (index === currentCharIndex) {
-                className += " text-muted-foreground/40 animate-pulse rounded-sm bg-muted-foreground/10";
+            } else if (isCurrent) {
+                className += " bg-primary text-primary-foreground rounded-sm"
             } else {
-                className += " text-muted-foreground/40";
+                className += " text-muted-foreground/40"
             }
+
+            const stateKey = isTyped ? "typed" : isCurrent ? "current" : "rest"
+
             return (
-                <span key={index} className={className}>
+                <motion.span
+                    key={`${index}-${stateKey}`}
+                    className={className}
+                    initial={isTyped ? { opacity: 0, y: 2, filter: "blur(1px)" } : { opacity: 0.5 }}
+                    animate={
+                        isTyped
+                            ? { opacity: 1, y: 0, filter: "blur(0px)" }
+                            : isCurrent
+                                ? { opacity: [0.85, 1, 0.85] }
+                                : { opacity: 0.5 }
+                    }
+                >
                     {char}
-                </span>
-            );
-        });
-    };
+                </motion.span>
+            )
+        })
+    }, [currentPassage, userInput, currentCharIndex])
 
     console.log('Rendering with gameState:', gameState);
 
@@ -456,7 +475,7 @@ export default function Counter() {
                 </div>
             </motion.header>
 
-            <main className="flex-1 container mx-auto px-6 py-8 max-w-6xl">
+            <main className="flex-1 container mx-auto px-6 py-8 max-w-[85vw]">
                 <AnimatePresence mode="wait">
                     {gameState === "setup" && (
                         <motion.div
@@ -641,98 +660,110 @@ export default function Counter() {
                     {gameState === "typing" && (
                         <motion.div
                             key="typing"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            transition={{ duration: 0.3 }}
-                            className="space-y-6"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="w-full max-w-full space-y-6"
                         >
-                            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                                <div className="lg:col-span-3 space-y-6">
-                                    <div className="flex items-center justify-between bg-card border rounded-lg p-4">
-                                        <div className="flex items-center gap-6">
-                                            <div className="flex items-center gap-2">
-                                                <Clock className="w-4 h-4 text-muted-foreground" />
-                                                <span className="font-mono text-lg font-semibold">
-                                                    {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, "0")}
-                                                </span>
-                                            </div>
-                                            <div className="text-sm">
-                                                <span className="text-muted-foreground">WPM:</span>
-                                                <span className="font-semibold ml-1">{stats.wpm}</span>
-                                            </div>
-                                            <div className="text-sm">
-                                                <span className="text-muted-foreground">Accuracy:</span>
-                                                <span className="font-semibold ml-1">{stats.accuracy}%</span>
-                                            </div>
-                                        </div>
-                                        <Progress value={currentPassage.length > 0 ? (userInput.length / currentPassage.length) * 100 : 0} className="w-32" />
-                                    </div>
-
-                                    <Card className="p-8 relative">
-                                        <div
-                                            className={cn(
-                                                "text-lg leading-relaxed mb-8 p-6 rounded-lg bg-muted/20 border border-muted-foreground/10 min-h-[200px] flex items-start cursor-text",
-                                                room?.settings?.passageType === "code" && "font-mono text-base"
-                                            )}
-                                            onClick={() => inputRef.current?.focus()}
-                                        >
-                                            <div className="w-full">{renderPassageText()}</div>
-                                        </div>
-                                        <input
-                                            ref={inputRef}
-                                            type="text"
-                                            value={userInput}
-                                            onChange={handleInputChange}
-                                            className="absolute -left-[9999px] opacity-0 w-1 h-1"
-                                            autoComplete="off"
-                                            spellCheck="false"
-                                            autoFocus
+                            <div className="flex w-ful items-center justify-between bg-card border rounded-lg p-4">
+                                <div className="flex items-center gap-6">
+                                    <div className="relative flex items-center gap-2">
+                                        <span
+                                            aria-hidden
+                                            className="pointer-events-none absolute -inset-2 rounded-md ring-2 ring-primary/25 animate-pulse"
                                         />
-                                        <div className="text-center text-muted-foreground text-sm">
-                                            <motion.div
-                                                animate={{ opacity: [0.5, 1, 0.5] }}
-                                                transition={{ duration: 2, repeat: Infinity }}
-                                            >
-                                                Click here and start typing...
-                                            </motion.div>
-                                        </div>
-                                    </Card>
+                                        <Clock className="w-4 h-4 text-muted-foreground" />
+                                        <span className="font-mono text-xl md:text-2xl font-semibold tracking-tight">
+                                            {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, "0")}
+                                        </span>
+                                    </div>
+                                    <div className="text-sm">
+                                        <span className="text-muted-foreground">WPM:</span>
+                                        <span className="font-semibold ml-1">{stats.wpm}</span>
+                                    </div>
+                                    <div className="text-sm">
+                                        <span className="text-muted-foreground">Accuracy:</span>
+                                        <span className="font-semibold ml-1">{stats.accuracy}%</span>
+                                    </div>
+                                </div>
+                                <Progress value={(userInput.length / currentPassage.length) * 100 * 1.0} className="w-32" />
+                            </div>
+
+                            <Card className="p-6 md:p-10 relative w-full">
+                                <div
+                                    className={cn(
+                                        "w-full max-w-full min-h-[55vh] grid place-items-center mb-8 p-6 rounded-xl bg-muted/20 border border-muted-foreground/10 cursor-text transition-colors"
+                                    )}
+                                    onClick={() => inputRef.current?.focus()}
+                                    role="textbox"
+                                    aria-label="Typing area"
+                                    tabIndex={0}
+                                >
+                                    <div className="w-full text-center">
+                                        <motion.div
+                                            key="passage"
+                                            initial={{ opacity: 0, y: 4 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.2 }}
+                                            className="inline-block text-pretty text-2xl md:text-4xl leading-relaxed"
+                                        >
+                                            {renderPassageText}
+                                        </motion.div>
+                                    </div>
                                 </div>
 
-                                <div className="lg:col-span-1">
-                                    <Card className="p-4 sticky top-24">
-                                        <CardHeader className="p-0 mb-4">
-                                            <CardTitle className="text-lg flex items-center gap-2">
-                                                <Trophy className="w-4 h-4" />
-                                                Live Rankings
-                                            </CardTitle>
-                                        </CardHeader>
-                                        <div className="space-y-3">
-                                            {participants
-                                                .sort((a, b) => (b.currentWpm || 0) - (a.currentWpm || 0))
-                                                .map((participant, index) => (
-                                                    <div key={participant.id} className="flex items-center justify-between p-2 bg-muted/50 rounded">
-                                                        <div className="flex items-center gap-2">
-                                                            <Badge variant={index === 0 ? "default" : "outline"} className="w-6 h-6 text-xs p-0">
-                                                                {index + 1}
-                                                            </Badge>
-                                                            <span className={cn(
-                                                                "text-sm truncate max-w-20",
-                                                                participant.id === user?.id && "font-bold text-primary"
-                                                            )}>
-                                                                {participant.name}
-                                                            </span>
-                                                        </div>
-                                                        <div className="text-right text-xs">
-                                                            <div className="font-semibold">{participant.currentWpm || 0} WPM</div>
-                                                            <div className="text-muted-foreground">{Math.round(participant.progress || 0)}%</div>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                        </div>
-                                    </Card>
+                                <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={userInput}
+                                    onChange={handleInputChange}
+                                    className="absolute -left-[9999px] opacity-0 w-1 h-1"
+                                    autoComplete="off"
+                                    spellCheck="false"
+                                    autoFocus
+                                />
+
+                                <div className="text-center text-muted-foreground text-sm">
+                                    <motion.div
+                                        animate={{ opacity: [0.6, 1, 0.6] }}
+                                        transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                                    >
+                                        Click the area above and start typing to begin the test...
+                                    </motion.div>
                                 </div>
+                            </Card>
+
+                            <div className="lg:col-span-1">
+                                <Card className="p-4 sticky top-24">
+                                    <CardHeader className="p-0 mb-4">
+                                        <CardTitle className="text-lg flex items-center gap-2">
+                                            <Trophy className="w-4 h-4" />
+                                            Live Rankings
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <div className="space-y-3">
+                                        {participants
+                                            .sort((a, b) => (b.currentWpm || 0) - (a.currentWpm || 0))
+                                            .map((participant, index) => (
+                                                <div key={participant.id} className="flex items-center justify-between p-2 bg-muted/50 rounded">
+                                                    <div className="flex items-center gap-2">
+                                                        <Badge variant={index === 0 ? "default" : "outline"} className="w-6 h-6 text-xs p-0">
+                                                            {index + 1}
+                                                        </Badge>
+                                                        <span className={cn(
+                                                            "text-sm truncate max-w-20",
+                                                            participant.id === user?.id && "font-bold text-primary"
+                                                        )}>
+                                                            {participant.name}
+                                                        </span>
+                                                    </div>
+                                                    <div className="text-right text-xs">
+                                                        <div className="font-semibold">{participant.currentWpm || 0} WPM</div>
+                                                        <div className="text-muted-foreground">{Math.round(participant.progress || 0)}%</div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                    </div>
+                                </Card>
                             </div>
                         </motion.div>
                     )}
@@ -872,6 +903,6 @@ export default function Counter() {
                     )}
                 </AnimatePresence>
             </main>
-        </div>
+        </div >
     );
 }
