@@ -217,7 +217,7 @@ export function StatsSection({ chartData, stats, latestTest, loading, competitio
                             <ChartContainer config={wpmChartConfig} className="h-[250px] w-full">
                                 <ResponsiveContainer width="100%" height={250}>
                                     <LineChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                                        <CartesianGrid stroke={isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"} />
+                                        {/* <CartesianGrid stroke={isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"} /> */}
                                         <XAxis dataKey="testNumber" fontSize={12} tickMargin={5} stroke="#ffffff" tick={{ fill: "#ffffff" }} />
                                         <YAxis fontSize={12} tickMargin={5} width={40} stroke="#ffffff" tick={{ fill: "#ffffff" }} />
 
@@ -273,7 +273,7 @@ export function StatsSection({ chartData, stats, latestTest, loading, competitio
                                             fill="var(--secondary)"
                                             radius={[4, 4, 0, 0]}
                                         />
-                                        <CartesianGrid stroke={isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"} />
+                                        {/* <CartesianGrid stroke={isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"} /> */}
                                         <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                                         <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} allowDecimals={false} />
                                     </BarChart>
