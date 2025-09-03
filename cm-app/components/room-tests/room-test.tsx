@@ -542,9 +542,9 @@ export default function Counter() {
                                                         <Button
                                                             size="sm"
                                                             variant={room?.settings?.passageType === 'code' ? "default" : "outline"}
-                                                            onClick={() => socket?.emit('update-settings', { roomCode, settings: { passageType: 'code' } })}
+                                                            disabled
                                                         >
-                                                            Code
+                                                            Code (Coming Soon)
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -562,7 +562,7 @@ export default function Counter() {
                                             <div className="p-3 bg-muted rounded-lg text-sm font-mono break-all">
                                                 {roomUrl}
                                             </div>
-                                            <Button onClick={copyInviteLink} className="w-full" variant="outline">
+                                            <Button onClick={copyInviteLink} className="w-full" variant="default">
                                                 <Copy className="w-4 h-4 mr-2" />
                                                 Copy Invite Link
                                             </Button>

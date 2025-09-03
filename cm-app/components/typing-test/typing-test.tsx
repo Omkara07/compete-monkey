@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -202,32 +202,46 @@ export function TypingTest() {
         }
     }
 
-    const renderPassageText = () => {
+    const renderPassageText = useMemo(() => {
         return currentPassage.split("").map((char, index) => {
+            const isTyped = index < userInput.length
+            const isCurrent = index === currentCharIndex
+
             let className = "transition-all duration-150 ease-out"
 
-            if (index < userInput.length) {
-                // Typed characters - bright and colored
+            if (isTyped) {
                 if (userInput[index] === char) {
                     className += " dark:text-primary-foreground text-black font-medium bg-primary/10 rounded-sm"
                 } else {
-                    className += " text-destructive font-medium dark:text-destructive dark:bg-destructive/20 bg-destructive/20 rounded-sm"
+                    className +=
+                        " text-destructive font-medium dark:text-destructive dark:bg-destructive/20 bg-destructive/20 rounded-sm"
                 }
-            } else if (index === currentCharIndex) {
-                // Current character - cursor
-                className += " bg-primary text-primary-foreground animate-pulse rounded-sm"
+            } else if (isCurrent) {
+                className += " bg-primary text-primary-foreground rounded-sm"
             } else {
-                // Untyped characters - faded and dull
                 className += " text-muted-foreground/40"
             }
 
+            const stateKey = isTyped ? "typed" : isCurrent ? "current" : "rest"
+
             return (
-                <span key={index} className={className}>
+                <motion.span
+                    key={`${index}-${stateKey}`}
+                    className={className}
+                    initial={isTyped ? { opacity: 0, y: 2, filter: "blur(1px)" } : { opacity: 0.5 }}
+                    animate={
+                        isTyped
+                            ? { opacity: 1, y: 0, filter: "blur(0px)" }
+                            : isCurrent
+                                ? { opacity: [0.85, 1, 0.85] }
+                                : { opacity: 0.5 }
+                    }
+                >
                     {char}
-                </span>
+                </motion.span>
             )
         })
-    }
+    }, [currentPassage, userInput, currentCharIndex])
 
     const saveTestResult = async (finalStats: TypingStats) => {
         try {
@@ -297,7 +311,7 @@ export function TypingTest() {
                 </div>
             </motion.header>
 
-            <main className="flex-1 container mx-auto px-6 py-8 max-w-4xl">
+            <main className="flex-1 container mx-auto px-6 py-8 max-w-[85vw] w-full">
                 <AnimatePresence mode="wait">
                     {gameState === "setup" && (
                         <motion.div
@@ -361,10 +375,11 @@ export function TypingTest() {
                                                 </Button>
                                                 <Button
                                                     variant={passageType === "code" ? "default" : "outline"}
-                                                    onClick={() => setPassageType("code")}
+                                                    // onClick={() => setPassageType("code")}
+                                                    disabled
                                                     className="h-12"
                                                 >
-                                                    Code
+                                                    Code (coming soon)
                                                 </Button>
                                             </div>
                                         </div>
@@ -408,13 +423,21 @@ export function TypingTest() {
                     )}
 
                     {gameState === "typing" && (
-                        <motion.div key="typing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-                            {/* Stats Bar */}
-                            <div className="flex items-center justify-between bg-card border rounded-lg p-4">
+                        <motion.div
+                            key="typing"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="w-full max-w-full space-y-6"
+                        >
+                            <div className="flex w-ful items-center justify-between bg-card border rounded-lg p-4">
                                 <div className="flex items-center gap-6">
-                                    <div className="flex items-center gap-2">
+                                    <div className="relative flex items-center gap-2">
+                                        <span
+                                            aria-hidden
+                                            className="pointer-events-none absolute -inset-2 rounded-md ring-2 ring-primary/25 animate-pulse"
+                                        />
                                         <Clock className="w-4 h-4 text-muted-foreground" />
-                                        <span className="font-mono text-lg font-semibold">
+                                        <span className="font-mono text-xl md:text-2xl font-semibold tracking-tight">
                                             {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, "0")}
                                         </span>
                                     </div>
@@ -427,18 +450,31 @@ export function TypingTest() {
                                         <span className="font-semibold ml-1">{stats.accuracy}%</span>
                                     </div>
                                 </div>
-                                <Progress value={(userInput.length / currentPassage.length) * 100} className="w-32" />
+                                <Progress value={(userInput.length / currentPassage.length) * 100 * 1.0} className="w-32" />
                             </div>
 
-                            <Card className="p-8 relative">
+                            <Card className="p-6 md:p-10 relative w-full">
                                 <div
                                     className={cn(
-                                        "text-lg leading-relaxed mb-8 p-6 rounded-lg bg-muted/20 border border-muted-foreground/10 min-h-[200px] flex items-start cursor-text",
-                                        passageType === "code" && "font-mono text-base",
+                                        "w-full max-w-full min-h-[55vh] grid place-items-center mb-8 p-6 rounded-xl bg-muted/20 border border-muted-foreground/10 cursor-text transition-colors",
+                                        passageType === "code" && "font-mono",
                                     )}
                                     onClick={() => inputRef.current?.focus()}
+                                    role="textbox"
+                                    aria-label="Typing area"
+                                    tabIndex={0}
                                 >
-                                    <div className="w-full">{renderPassageText()}</div>
+                                    <div className="w-full text-center">
+                                        <motion.div
+                                            key="passage"
+                                            initial={{ opacity: 0, y: 4 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.2 }}
+                                            className="inline-block text-pretty text-2xl md:text-4xl leading-relaxed"
+                                        >
+                                            {renderPassageText}
+                                        </motion.div>
+                                    </div>
                                 </div>
 
                                 <input
@@ -454,10 +490,10 @@ export function TypingTest() {
 
                                 <div className="text-center text-muted-foreground text-sm">
                                     <motion.div
-                                        animate={{ opacity: [0.5, 1, 0.5] }}
+                                        animate={{ opacity: [0.6, 1, 0.6] }}
                                         transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
                                     >
-                                        Click here and start typing to begin the test...
+                                        Click the area above and start typing to begin the test...
                                     </motion.div>
                                 </div>
                             </Card>

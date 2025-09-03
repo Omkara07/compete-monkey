@@ -5,6 +5,7 @@ import { RoomCard } from "@/components/room-tests/room-card"
 import CurrentProfile from "@/lib/current-profile"
 import { RedirectToSignIn } from "@clerk/nextjs"
 import { db } from "@/lib/db"
+import { Home } from "lucide-react"
 
 type RoomRow = {
     id: string
@@ -58,13 +59,19 @@ export default async function RoomPage() {
             {/* Actions */}
             <section className="mb-6 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-start">
                 <Link href="/room/create" className="w-full sm:w-auto">
-                    <Button size="lg" className="w-full sm:w-auto">
+                    <Button size="lg" className="w-full sm:w-auto p-10">
                         Create Room
                     </Button>
                 </Link>
                 <Link href="/room/join" className="w-full sm:w-auto">
-                    <Button size="lg" variant="secondary" className="w-full sm:w-auto">
+                    <Button size="lg" variant="secondary" className="w-full sm:w-auto p-10">
                         Join Room
+                    </Button>
+                </Link>
+                <Link href="/dashboard" className="w-full sm:w-auto mt-2 sm:mt-0 ml-auto mr-10">
+                    <Button variant="ghost" size="sm">
+                        <Home className="w-4 h-4 mr-2" />
+                        Dashboard
                     </Button>
                 </Link>
             </section>
