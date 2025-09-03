@@ -131,7 +131,7 @@ export default function Counter() {
         }
 
         const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001';
-        const newSocket = io(socketUrl, { autoConnect: true });
+        const newSocket = io(socketUrl, { autoConnect: true, transports: ['websocket', 'polling'] });
         setSocket(newSocket);
 
         console.log('Connecting to Socket.IO at:', socketUrl);

@@ -40,9 +40,18 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: process.env.CLIENT_URL || "http://localhost:3000",
-        methods: ["GET", "POST"]
-    }
+        origin: [
+            process.env.CLIENT_URL || "http://localhost:3000",
+            "https://compete-monkey.vercel.app"
+        ],
+        methods: ["GET", "POST"],
+        credentials: true
+    },
+    transports: ['websocket', 'polling']
+});
+
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
 app.use(cors());
@@ -89,6 +98,7 @@ io.on('connection', (socket) => {
 
     // Join room
     socket.on('join-room', async ({ roomCode, user }: { roomCode: string; user: User }) => {
+        console.log('Join-room received:', { roomCode, user, server: process.env.RENDER_INSTANCE_ID });
         try {
             socket.join(roomCode);
 
