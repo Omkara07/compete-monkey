@@ -7,7 +7,6 @@ export default async function Home() {
     if (!profile) {
         redirect("/sign-in")
     }
-    console.log(profile)
 
     return <div className="max-md:pt-3">
         <Dashboard profile={profile as any} />

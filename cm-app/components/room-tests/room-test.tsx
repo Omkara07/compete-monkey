@@ -134,9 +134,6 @@ export default function Counter() {
         const newSocket = io(socketUrl, { autoConnect: true, transports: ['websocket', 'polling'] });
         setSocket(newSocket);
 
-        console.log('Connecting to Socket.IO at:', socketUrl);
-        console.log('Joining room:', roomCode, 'with user:', user);
-
         newSocket.on('connect', () => {
             console.log('Socket connected:', newSocket.id);
             newSocket.emit('join-room', { roomCode, user });

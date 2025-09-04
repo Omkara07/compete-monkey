@@ -11,14 +11,6 @@ export async function POST(req: NextRequest) {
 
         const { roomCode, results, passage, timeLimit, passageType } = await req.json();
 
-        console.log('Received competition data:', {
-            roomCode,
-            resultsCount: results?.length,
-            passageLength: passage?.length,
-            timeLimit,
-            passageType
-        });
-
         if (!roomCode || !results || !Array.isArray(results)) {
             return NextResponse.json(
                 { error: "Invalid request data" },
@@ -66,8 +58,6 @@ export async function POST(req: NextRequest) {
                 })
             )
         );
-
-        console.log(`Competition ${competition.id} saved with ${competitionResults.length} results`);
 
         return NextResponse.json({
             competitionId: competition.id,

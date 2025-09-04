@@ -254,8 +254,6 @@ export function TypingTest() {
             if (!res.data?.success) {
                 console.log("error");
             }
-
-            console.log(res.data.testId);
         }
         catch (error) {
             console.log("Error saving test result:", error);
