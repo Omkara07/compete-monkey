@@ -35,12 +35,10 @@ export const useTypingStats = () => {
             const res = await fetch("/api/typing-test/stats");
             const data = await res.json();
             setChartData(data.chartData);
-            console.log(data)
 
             const testRes = await fetch("/api/typing-test?limit=1");
             const { typingTests, stats } = await testRes.json()
 
-            console.log(typingTests)
             if (typingTests.length > 0 && stats) {
                 setStats(stats);
                 setLatestTest(typingTests[0]);

@@ -135,12 +135,10 @@ export default function Counter() {
         setSocket(newSocket);
 
         newSocket.on('connect', () => {
-            console.log('Socket connected:', newSocket.id);
             newSocket.emit('join-room', { roomCode, user });
         });
 
         newSocket.on('joined-room', async ({ room }) => {
-            console.log('Received joined-room:', room);
             setRoom(room);
             setIsHost(room?.host?.id && user?.id ? room.host.id === user.id : false);
 
@@ -150,7 +148,6 @@ export default function Counter() {
                     userId: user?.id,
                     userName: user?.name
                 });
-                console.log('User joined room in database:', response.data);
             } catch (error) {
                 console.error('Error joining room in database:', error);
                 setError('Failed to join room in database. Please try again.');
@@ -158,7 +155,6 @@ export default function Counter() {
         });
 
         newSocket.on('room-updated', ({ participants, settings, gameState }) => {
-            console.log('Received room-updated:', { participants, settings, gameState });
             setParticipants(participants || []);
             setGameState(
                 gameState === 'waiting' ? 'setup' :
@@ -168,7 +164,6 @@ export default function Counter() {
         });
 
         newSocket.on('game-starting', ({ passage }) => {
-            console.log('Received game-starting:', passage);
             setCurrentPassage(passage || '');
             setUserInput("");
             setCurrentCharIndex(0);
@@ -182,13 +177,11 @@ export default function Counter() {
         });
 
         newSocket.on('countdown', (count) => {
-            console.log('Received countdown:', count);
             setGameState('countdown');
             setCountdown(count || 3);
         });
 
         newSocket.on('game-started', ({ startTime, timeLimit }) => {
-            console.log('Received game-started:', { startTime, timeLimit });
             setGameState('typing');
             setStartTime(startTime || Date.now());
             setTimeLeft(timeLimit || 30);
@@ -216,7 +209,6 @@ export default function Counter() {
         });
 
         newSocket.on('live-update', ({ userId, progress, wpm, accuracy }) => {
-            console.log('Received live-update:', { userId, progress, wpm, accuracy });
             setParticipants(prev =>
                 prev.map(p =>
                     p.id === userId
@@ -227,7 +219,6 @@ export default function Counter() {
         });
 
         newSocket.on('game-finished', ({ results, winner }) => {
-            console.log('Received game-finished with results:', results);
             setGameState('finished');
             setFinalResults(results || []);
             if (timerRef.current) {
@@ -237,7 +228,6 @@ export default function Counter() {
         });
 
         newSocket.on('room-reset', ({ participants, settings, gameState }) => {
-            console.log('Received room-reset:', { participants, settings, gameState });
             setGameState(gameState === 'waiting' ? 'setup' : gameState);
             setParticipants(participants || []);
             setCurrentPassage("");
@@ -260,7 +250,6 @@ export default function Counter() {
         });
 
         return () => {
-            console.log('Disconnecting socket');
             if (timerRef.current) {
                 clearInterval(timerRef.current);
             }
@@ -335,7 +324,6 @@ export default function Counter() {
         try {
             // Only host should save competition results
             if (!isHost) {
-                console.log('Not host, skipping competition save');
                 return;
             }
 
@@ -343,8 +331,6 @@ export default function Counter() {
                 console.warn('No results to save');
                 return;
             }
-
-            console.log('Host saving competition results...');
 
             const response = await axios.post('/api/competitions', {
                 roomCode,
@@ -354,7 +340,6 @@ export default function Counter() {
                 passageType: room?.settings?.passageType
             });
 
-            console.log('Competition saved successfully:', response.data);
         } catch (error) {
             console.error('Error saving competition result:', error);
         }
@@ -404,8 +389,6 @@ export default function Counter() {
             )
         })
     }, [currentPassage, userInput, currentCharIndex])
-
-    console.log('Rendering with gameState:', gameState);
 
     if (error) {
         return (
