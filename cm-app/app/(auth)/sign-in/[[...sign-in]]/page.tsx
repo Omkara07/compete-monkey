@@ -1,10 +1,20 @@
-import { SignIn } from '@clerk/nextjs'
+"use client"
+
+import { SignIn, useUser } from '@clerk/nextjs'
+import { redirect } from 'next/navigation'
 
 export default function Page() {
-    return <SignIn
-        afterSignInUrl="/dashboard"
-        afterSignUpUrl="/dashboard"
-        signUpUrl={null as any}
-        withSignUp={true}
-    />
+    const { user } = useUser()
+
+    if (!user) {
+        return <SignIn
+            withSignUp={true}
+            path="/sign-in"
+            routing="path"
+            afterSignInUrl={'/dashboard'}
+            afterSignUpUrl={'/dashboard'}
+        />
+    }
+
+    return redirect('/dashboard')
 }

@@ -1,15 +1,15 @@
 import { Dashboard } from "@/components/dashboard/dashboard"
-import CurrentProfile from "@/lib/current-profile";
+import { syncUser } from "@/lib/sync-user";
 import { redirect } from "next/navigation";
 
 export default async function Home() {
-    const profile = await CurrentProfile();
-
+    const profile = await syncUser();
     if (!profile) {
         redirect("/sign-in")
     }
+    console.log(profile)
 
     return <div className="max-md:pt-3">
-        <Dashboard profile={profile} />
+        <Dashboard profile={profile as any} />
     </div>
 }
