@@ -227,14 +227,14 @@ export function StatsSection({ chartData, stats, latestTest, loading, competitio
                                             dataKey="wpm"
                                             stroke="var(--primary)"
                                             strokeWidth={2}
-                                            dot={{ fill: isDark ? "#cccccc" : "black", strokeWidth: 2, r: 3 }}
+                                            dot={{ fill: "var(--primary)", strokeWidth: 2, r: 3 }}
                                         />
                                         <Line
                                             type="monotone"
                                             dataKey="accuracy"
                                             stroke="var(--secondary)" // softer white/gray for contrast
                                             strokeWidth={2}
-                                            dot={{ fill: isDark ? "#cccccc" : "black", strokeWidth: 2, r: 3 }}
+                                            dot={{ fill: "var(--secondary)", strokeWidth: 2, r: 3 }}
                                         />
                                     </LineChart>
                                 </ResponsiveContainer>

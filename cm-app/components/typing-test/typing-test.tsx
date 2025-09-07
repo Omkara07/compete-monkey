@@ -112,13 +112,24 @@ export function TypingTest() {
         }
     }, [])
 
+    useEffect(() => {
+        const getRandonText = async () => {
+            const res = await axios.get("/api/random-text");
+            const text = res.data;
+            setCurrentPassage(text);
+        }
+        if (gameState === "setup") {
+            getRandonText()
+        }
+    }, [gameState])
+
     const startTest = () => {
         // Clear any existing timers first
         clearAllTimers()
 
-        const passages = passageType === "text" ? textPassages : codeSnippets
-        const randomPassage = passages[Math.floor(Math.random() * passages.length)]
-        setCurrentPassage(randomPassage)
+        // const passages = passageType === "text" ? textPassages : codeSnippets
+        // const randomPassage = passages[Math.floor(Math.random() * passages.length)]
+        // setCurrentPassage(randomPassage)
         setTimeLeft(timeLimit)
         setUserInput("")
         setCurrentCharIndex(0)
@@ -206,39 +217,43 @@ export function TypingTest() {
         return currentPassage.split("").map((char, index) => {
             const isTyped = index < userInput.length
             const isCurrent = index === currentCharIndex
+            const isCorrect = isTyped && userInput[index] === char
+            const isIncorrect = isTyped && userInput[index] !== char
 
-            let className = "transition-all duration-150 ease-out"
+            let className = "relative transition-colors duration-75 ease-out"
 
             if (isTyped) {
-                if (userInput[index] === char) {
-                    className += " dark:text-primary-foreground text-black font-medium bg-primary/10 rounded-sm"
+                if (isCorrect) {
+                    // Correct characters - subtle green tint
+                    className += " text-emerald-600 dark:text-emerald-500"
                 } else {
-                    className +=
-                        " text-destructive font-medium dark:text-destructive dark:bg-destructive/20 bg-destructive/20 rounded-sm"
+                    // Incorrect characters - red with background
+                    className += " text-red-600 dark:text-red-500 bg-red-500/20 dark:bg-red-400/20 rounded-sm"
                 }
-            } else if (isCurrent) {
-                className += " bg-primary text-primary-foreground rounded-sm"
             } else {
-                className += " text-muted-foreground/40"
+                // Untyped characters - much more visible
+                className += " text-gray-700 dark:text-gray-500"
             }
 
-            const stateKey = isTyped ? "typed" : isCurrent ? "current" : "rest"
-
             return (
-                <motion.span
-                    key={`${index}-${stateKey}`}
-                    className={className}
-                    initial={isTyped ? { opacity: 0, y: 2, filter: "blur(1px)" } : { opacity: 0.5 }}
-                    animate={
-                        isTyped
-                            ? { opacity: 1, y: 0, filter: "blur(0px)" }
-                            : isCurrent
-                                ? { opacity: [0.85, 1, 0.85] }
-                                : { opacity: 0.5 }
-                    }
-                >
+                <span key={index} className={className}>
+                    {/* Typing cursor - vertical line that blinks */}
+                    {isCurrent && (
+                        <motion.span
+                            className="absolute -left-0.5 top-0 w-0.5 h-full bg-yellow-500 dark:bg-yellow-400 rounded-full"
+                            initial={{ opacity: 1 }}
+                            animate={{
+                                opacity: [1, 1, 0, 0],
+                            }}
+                            transition={{
+                                duration: 1,
+                                repeat: Infinity,
+                                ease: "linear"
+                            }}
+                        />
+                    )}
                     {char}
-                </motion.span>
+                </span>
             )
         })
     }, [currentPassage, userInput, currentCharIndex])
@@ -454,7 +469,7 @@ export function TypingTest() {
                             <Card className="p-6 md:p-10 relative w-full">
                                 <div
                                     className={cn(
-                                        "w-full max-w-full min-h-[55vh] grid place-items-center mb-8 p-6 rounded-xl bg-muted/20 border border-muted-foreground/10 cursor-text transition-colors",
+                                        "w-full max-w-full min-h-[55vh] grid place-items-center mb-8 p-6 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 cursor-text transition-colors",
                                         passageType === "code" && "font-mono",
                                     )}
                                     onClick={() => inputRef.current?.focus()}
@@ -468,7 +483,7 @@ export function TypingTest() {
                                             initial={{ opacity: 0, y: 4 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.2 }}
-                                            className="inline-block text-pretty text-2xl md:text-4xl leading-relaxed"
+                                            className="inline-block text-pretty text-2xl md:text-3xl leading-relaxed font-medium tracking-wide letterspacing-wide"
                                         >
                                             {renderPassageText}
                                         </motion.div>
