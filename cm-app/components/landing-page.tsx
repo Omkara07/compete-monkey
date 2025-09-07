@@ -157,7 +157,7 @@ export function LandingPage() {
 
             <motion.div variants={containerVariants} initial="hidden" animate="visible" className="pt-24">
                 {/* Hero Section */}
-                <section className="max-w-7xl mx-auto px-6 md:pt-24 md:pb-10 pt-10 pb-5 text-center">
+                <section className="max-w-7xl mx-auto px-6 md:pt-20 md:pb-10 pt-10 pb-5 text-center">
                     <motion.div variants={itemVariants} className="mb-12">
                         <Badge
                             variant="secondary"
@@ -200,7 +200,7 @@ export function LandingPage() {
                             />
                         </h1>
 
-                        <p className="text-lg md:text-xl pt-14 text-muted-foreground max-w-4xl mx-auto mb-16 leading-relaxed font-medium">
+                        <p className="text-lg md:text-xl pt-16 text-muted-foreground max-w-4xl mx-auto mb-16 leading-relaxed font-medium">
                             The most competitive typing platform where milliseconds matter and every keystroke counts. Join elite
                             typists in real-time battles and prove your supremacy.
                         </p>

@@ -366,14 +366,11 @@ export default function Counter() {
 
             if (isTyped) {
                 if (isCorrect) {
-                    // Correct characters - subtle green tint
                     className += " text-emerald-600 dark:text-emerald-500"
                 } else {
-                    // Incorrect characters - red with background
                     className += " text-red-600 dark:text-red-500 bg-red-500/20 dark:bg-red-400/20 rounded-sm"
                 }
             } else {
-                // Untyped characters - much more visible
                 className += " text-gray-700 dark:text-gray-500"
             }
 
@@ -382,7 +379,7 @@ export default function Counter() {
                     {/* Typing cursor - vertical line that blinks */}
                     {isCurrent && (
                         <motion.span
-                            className="absolute -left-0.5 top-0 w-0.5 h-full bg-yellow-500 dark:bg-yellow-400 rounded-full"
+                            className="absolute -left-0.5 top-0 w-0.5 h-full bg-yellow-500 dark:bg-yellow-400 rounded-full transition-all duration-150"
                             initial={{ opacity: 1 }}
                             animate={{
                                 opacity: [1, 1, 0, 0],
@@ -390,7 +387,8 @@ export default function Counter() {
                             transition={{
                                 duration: 1,
                                 repeat: Infinity,
-                                ease: "linear"
+                                ease: "linear",
+                                times: [0, 0.1, 0.9, 1]
                             }}
                         />
                     )}
