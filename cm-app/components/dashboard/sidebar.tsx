@@ -10,6 +10,7 @@ import { SignOutButton } from "@clerk/nextjs"
 import Link from "next/link"
 import { ToggleTheme } from "../toggle-theme"
 import { useTypingStats } from "@/hooks/useTypingStats"
+import { AnimatedThemeToggler } from "../magicui/animated-theme-toggler"
 
 interface SidebarProps {
     activeSection: string
@@ -216,7 +217,7 @@ export function Sidebar({ activeSection, onSectionChange, profile }: SidebarProp
                             <p className="text-xs text-muted-foreground">Online</p>
                         </div>
                     </div>
-                    <ToggleTheme />
+                    <AnimatedThemeToggler className="w-5 h-5 text-sm" />
                     <SignOutButton>
                         <Button
                             variant="ghost"

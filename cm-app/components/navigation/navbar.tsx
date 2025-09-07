@@ -16,6 +16,8 @@ import { KeyboardIcon } from "lucide-react"
 import { ToggleTheme } from "../toggle-theme"
 import Link from "next/link"
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs"
+import { AnimatedThemeToggler } from "../magicui/animated-theme-toggler"
+import { ShineBorder } from "../magicui/shine-border"
 
 // Navigation links array to be used in both desktop and mobile menus
 const navigationLinks = [
@@ -26,8 +28,16 @@ const navigationLinks = [
 
 export default function Component() {
   return (
-    <header className="border rounded-full max-md:w-full max-md:mx-5 mt-2 px-4 md:px-6">
-      <div className="flex h-16 items-center justify-between md:gap-32">
+    <header className="w-[50%] md:mt-5 z-50 bg-background/80 backdrop-blur-xl border border-slate-600 dark:border-slate-800 rounded-full max-md:w-full max-md:mx-5 mt-2 px-4 md:px-6">
+      <div className="flex h-16 md:h-20 items-center justify-between md:gap-32">
+        <ShineBorder
+          shineColor={[
+            "#6366f1", // primary
+            "#f59e42", // secondary
+            "#22d3ee", // accent
+          ]}
+          className="rounded-full"
+        />
         {/* Left side */}
         <div className="flex items-center gap-2">
           {/* Mobile menu trigger */}
@@ -86,7 +96,7 @@ export default function Component() {
           {/* Main nav */}
           <div className="flex items-center gap-10">
             <a href="#" className="text-primary hover:text-primary/90">
-              <KeyboardIcon />
+              <KeyboardIcon className="h-8 w-8" />
             </a>
             {/* Navigation menu */}
             <NavigationMenu className="max-md:hidden">
@@ -107,8 +117,8 @@ export default function Component() {
           </div>
         </div>
         {/* Right side */}
-        <div className="flex items-center gap-2">
-          <ToggleTheme />
+        <div className="flex items-center gap-4">
+          <AnimatedThemeToggler />
           {/* When user is signed out */}
           <SignedOut>
             <Button asChild variant="ghost" size="sm" className="text-sm">
