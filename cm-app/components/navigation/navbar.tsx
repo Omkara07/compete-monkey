@@ -28,7 +28,7 @@ const navigationLinks = [
 
 export default function Component() {
   return (
-    <header className="w-[50%] md:mt-5 z-50 bg-background/80 backdrop-blur-xl border border-slate-600 dark:border-slate-800 rounded-full max-md:w-full max-md:mx-5 mt-2 px-4 md:px-6">
+    <header className="w-[70%] xl:w-[50%] md:mt-5 z-50 bg-background/80 backdrop-blur-xl border border-slate-600 dark:border-slate-800 rounded-full max-md:w-full max-md:mx-5 mt-2 px-4 md:px-6">
       <div className="flex h-16 md:h-20 items-center justify-between md:gap-32">
         <ShineBorder
           shineColor={[
