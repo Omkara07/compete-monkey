@@ -59,9 +59,6 @@ export async function POST(
             return NextResponse.json({ error: "Room not found" }, { status: 404 });
         }
 
-        if (room.participants.length >= room.maxPlayers) {
-            return NextResponse.json({ error: "Room is full" }, { status: 400 });
-        }
 
         // Check if already in room
         const existingParticipant = room.participants.find(p => p.userId === profile.id);
@@ -70,6 +67,10 @@ export async function POST(
                 message: "Already in room",
                 participant: existingParticipant
             });
+        }
+
+        if (room.participants.length >= room.maxPlayers) {
+            return NextResponse.json({ error: "Room is full" }, { status: 400 });
         }
 
         // Create new participant

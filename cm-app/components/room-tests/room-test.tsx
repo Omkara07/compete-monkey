@@ -101,6 +101,7 @@ export default function Counter() {
 
     const inputRef = useRef<HTMLInputElement>(null);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const hasPostedResultsRef = useRef<boolean>(false);
     const router = useRouter();
     const roomCode = code;
 
@@ -174,6 +175,7 @@ export default function Counter() {
                 incorrectChars: 0,
                 totalChars: 0,
             });
+            hasPostedResultsRef.current = false;
         });
 
         newSocket.on('countdown', (count) => {
@@ -259,7 +261,11 @@ export default function Counter() {
 
     useEffect(() => {
         if (gameState === "finished" && finalResults.length > 0) {
-            saveCompetitionResult();
+            // Host posts results only once per round
+            if (!hasPostedResultsRef.current) {
+                hasPostedResultsRef.current = true;
+                saveCompetitionResult();
+            }
         }
     }, [gameState, finalResults]);
 
@@ -353,6 +359,7 @@ export default function Counter() {
 
     const resetRoom = () => {
         socket?.emit('reset-room', { roomCode });
+        hasPostedResultsRef.current = false;
     };
 
     const renderPassageText = useMemo(() => {
@@ -579,7 +586,7 @@ export default function Counter() {
 
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle>Players ({participants.length}/8)</CardTitle>
+                                        <CardTitle>Players ({participants.length}/{room?.maxPlayers})</CardTitle>
                                     </CardHeader>
                                     <CardContent>
                                         <div className="space-y-3">

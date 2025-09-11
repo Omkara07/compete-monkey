@@ -26,6 +26,39 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Room not found" }, { status: 404 });
         }
 
+        // Idempotency guard: if a very recent competition exists with same room and winner, reuse it
+        const winnerId = results[0]?.userId || null;
+        const idempotencyWindowMs = 10 * 1000; // 10 seconds window to avoid duplicates
+        const windowStart = new Date(Date.now() - idempotencyWindowMs);
+
+        const recentExisting = await db.competition.findFirst({
+            where: {
+                roomId: room.id,
+                winnerId: winnerId || undefined,
+                passage: passage || "",
+                timeLimit: timeLimit || 30,
+                passageType: passageType || "text",
+                completedAt: { gte: windowStart }
+            },
+            orderBy: { completedAt: 'desc' }
+        });
+
+        if (recentExisting) {
+            // If results already exist for this competition, return them and skip creating duplicates
+            const existingResults = await db.competitionResult.findMany({
+                where: { competitionId: recentExisting.id },
+                orderBy: { position: 'asc' }
+            });
+
+            if (existingResults.length > 0) {
+                return NextResponse.json({
+                    competitionId: recentExisting.id,
+                    results: existingResults,
+                    reused: true
+                });
+            }
+        }
+
         // Create competition record
         const competition = await db.competition.create({
             data: {
@@ -35,7 +68,7 @@ export async function POST(req: NextRequest) {
                 passageType: passageType || "text",
                 startedAt: new Date(Date.now() - (timeLimit || 30) * 1000),
                 completedAt: new Date(),
-                winnerId: results[0]?.userId
+                winnerId: winnerId
             }
         });
 
@@ -91,8 +124,7 @@ export async function GET(req: NextRequest) {
                     }
                 }
             },
-            orderBy: { completedAt: 'desc' },
-            take: 6
+            orderBy: { completedAt: 'desc' }
         });
 
         // Transform for chart data (wins vs total per month)

@@ -34,6 +34,7 @@ interface Room {
     passage: string;
     results: Map<string, any>;
     startTime: number | null;
+    maxPlayers: number;
 }
 
 const app = express();
@@ -76,7 +77,8 @@ function createRoom(roomCode: string, host: User): Room {
         gameState: 'waiting',
         passage: '',
         results: new Map(),
-        startTime: null
+        startTime: null,
+        maxPlayers: 8
     };
 }
 
@@ -98,7 +100,7 @@ io.on('connection', (socket) => {
 
     // Join room
     socket.on('join-room', async ({ roomCode, user }: { roomCode: string; user: User }) => {
-        console.log('Join-room received:', { roomCode, user, server: process.env.RENDER_INSTANCE_ID });
+        // console.log('Join-room received:', { roomCode, user, server: process.env.RENDER_INSTANCE_ID });
         try {
             socket.join(roomCode);
 
@@ -107,7 +109,10 @@ io.on('connection', (socket) => {
             }
 
             const room = rooms.get(roomCode)!;
-
+            if (room.participants.size >= room.maxPlayers) {
+                socket.emit('error', { message: 'Room is full' });
+                return;
+            }
             room.participants.set(socket.id, {
                 ...user,
                 socketId: socket.id,
